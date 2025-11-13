@@ -135,23 +135,34 @@ class CouponController extends Controller
     }
 
     public function couponStore(Request $request){
-        // return $request->all();
-        $coupon=Coupon::where('code',$request->code)->first();
-        // dd($coupon);
-        if(!$coupon){
-            request()->session()->flash('error','Kode kupon tidak valid, silahkan coba lagi');
-            return back();
+        // Periksa apakah ada item di keranjang
+        $cartItems = Cart::where('user_id', auth()->user()->id)
+                        ->where('order_id', null)
+                        ->count();
+        
+        if ($cartItems == 0) {
+            return back()->with('error', 'Anda belum menambahkan item ke keranjang. Silakan tambahkan minimal 1 item terlebih dahulu.');
         }
-        if($coupon){
-            $total_price=Cart::where('user_id',auth()->user()->id)->where('order_id',null)->sum('price');
-            // dd($total_price);
-            session()->put('coupon',[
-                'id'=>$coupon->id,
-                'code'=>$coupon->code,
-                'value'=>$coupon->discount($total_price)
-            ]);
-            request()->session()->flash('success','Kupon berhasil diterapkan');
-            return redirect()->back();
+        
+        // Cek kupon
+        $coupon = Coupon::where('code', $request->code)->first();
+        
+        if (!$coupon) {
+            return back()->with('error', 'Kode kupon tidak valid, silakan coba lagi');
         }
+        
+        // Hitung total harga
+        $total_price = Cart::where('user_id', auth()->user()->id)
+                          ->where('order_id', null)
+                          ->sum('price');
+        
+        // Simpan kupon ke session
+        session()->put('coupon', [
+            'id' => $coupon->id,
+            'code' => $coupon->code,
+            'value' => $coupon->discount($total_price)
+        ]);
+        
+        return back()->with('success', 'Kupon berhasil diterapkan');
     }
 }

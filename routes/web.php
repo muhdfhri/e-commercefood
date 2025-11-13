@@ -84,6 +84,7 @@
     Route::get('/cart', function () {
         return view('frontend.pages.cart');
     })->name('cart');
+    Route::get('/checkout/validate', [CartController::class, 'validateCart'])->name('checkout.validate')->middleware('user');
     Route::get('/checkout', [CartController::class, 'checkout'])->name('checkout')->middleware('user');
 // Wishlist
     Route::get('/wishlist', function () {

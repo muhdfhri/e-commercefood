@@ -70,8 +70,8 @@
                                 </div>
                                 <div class="col-12">
                                     <div class="form-group login-btn text-center">
-                                        <button class="btn" type="submit">Masuk</button>
-                                        <a href="{{route('register.form')}}" class="btn btn-outline-secondary">Daftar</a>
+                                        <button class="btn" type="submit">Daftar</button>
+                                        <a href="{{route('login.form')}}" class="btn btn-outline-secondary">Masuk</a>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center mt-3">
                                         <div class="form-check">

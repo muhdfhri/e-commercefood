@@ -144,20 +144,28 @@
 									<ul>
 										<li class="order_subtotal" data-price="{{Helper::totalCartPrice()}}">Subtotal<span>Rp {{number_format(Helper::totalCartPrice(),2)}}</span></li>
 
-										@if(session()->has('coupon'))
-										<li class="coupon_price" data-price="{{Session::get('coupon')['value']}}">Potongan Harga<span>Rp {{number_format(Session::get('coupon')['value'],2)}}</span></li>
-										@endif
 										@php
-											$total_amount=Helper::totalCartPrice();
-											if(session()->has('coupon')){
-												$total_amount=$total_amount-Session::get('coupon')['value'];
+											$subtotal = Helper::totalCartPrice();
+											$coupon = session('coupon');
+											$discount = 0;
+											$total_amount = $subtotal;
+
+											// Hitung diskon hanya jika ada kupon dan subtotal > 0
+											if ($coupon && $subtotal > 0) {
+												$discount = $coupon['value'];
+												$total_amount = max(0, $subtotal - $discount);
 											}
 										@endphp
-										@if(session()->has('coupon'))
-											<li class="last" id="order_total_price">Total<span>Rp {{number_format($total_amount,2)}}</span></li>
-										@else
-											<li class="last" id="order_total_price">Total<span>Rp {{number_format($total_amount,2)}}</span></li>
+
+										@if($coupon && $subtotal > 0)
+											<li class="coupon_price" data-price="{{ $discount }}">
+												Potongan Harga<span>Rp {{ number_format($discount, 2) }}</span>
+											</li>
 										@endif
+
+										<li class="last" id="order_total_price">
+											Total<span>Rp {{ number_format($total_amount, 2) }}</span>
+										</li>
 									</ul>
 									<div class="button5">
 										<a href="{{route('checkout')}}" class="btn">Checkout</a>

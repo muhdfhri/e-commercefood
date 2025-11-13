@@ -109,9 +109,20 @@ class Helper
     {
         if (Auth::check()) {
             if ($user_id == "") $user_id = auth()->user()->id;
-            return Cart::with('product')->where('user_id', $user_id)->where('order_id', null)->get();
+            $cartItems = Cart::with('product')->where('user_id', $user_id)->where('order_id', null)->get();
+            
+            // Clear coupon if cart is empty
+            if ($cartItems->isEmpty() && session()->has('coupon')) {
+                session()->forget('coupon');
+            }
+            
+            return $cartItems;
         } else {
-            return 0;
+            // Clear coupon if user is not logged in
+            if (session()->has('coupon')) {
+                session()->forget('coupon');
+            }
+            return collect(); // Return empty collection instead of 0 for consistency
         }
     }
     // Total amount cart
@@ -119,8 +130,19 @@ class Helper
     {
         if (Auth::check()) {
             if ($user_id == "") $user_id = auth()->user()->id;
-            return Cart::where('user_id', $user_id)->where('order_id', null)->sum('amount');
+            $total = Cart::where('user_id', $user_id)->where('order_id', null)->sum('amount');
+            
+            // Clear coupon if cart is empty
+            if ($total <= 0 && session()->has('coupon')) {
+                session()->forget('coupon');
+            }
+            
+            return $total;
         } else {
+            // Clear coupon if user is not logged in
+            if (session()->has('coupon')) {
+                session()->forget('coupon');
+            }
             return 0;
         }
     }

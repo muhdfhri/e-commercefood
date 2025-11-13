@@ -13,6 +13,26 @@ class CartController extends Controller
     protected $product=null;
     public function __construct(Product $product){
         $this->product=$product;
+        $this->middleware(function ($request, $next) {
+            $this->checkAndClearCoupon();
+            return $next($request);
+        });
+    }
+    
+    /**
+     * Periksa dan hapus kupon jika keranjang kosong
+     */
+    protected function checkAndClearCoupon()
+    {
+        if (auth()->check()) {
+            $cartCount = Cart::where('user_id', auth()->user()->id)
+                           ->where('order_id', null)
+                           ->count();
+            
+            if ($cartCount == 0 && session()->has('coupon')) {
+                session()->forget('coupon');
+            }
+        }
     }
 
     public function addToCart(Request $request){
@@ -48,7 +68,16 @@ class CartController extends Controller
             $cart->amount=$cart->price*$cart->quantity;
             if ($cart->product->stock < $cart->quantity || $cart->product->stock <= 0) return back()->with('error','Stok tidak mencukupi!.');
             $cart->save();
-            $wishlist=Wishlist::where('user_id',auth()->user()->id)->where('cart_id',null)->update(['cart_id'=>$cart->id]);
+            // Hanya update wishlist untuk produk yang sedang ditambahkan ke keranjang
+            $wishlist = Wishlist::where('user_id', auth()->user()->id)
+                ->where('product_id', $product->id)
+                ->where('cart_id', null)
+                ->first();
+                
+            if ($wishlist) {
+                $wishlist->cart_id = $cart->id;
+                $wishlist->save();
+            }
         }
         request()->session()->flash('success','Produk berhasil ditambahkan ke keranjang');
         return back();       
@@ -182,7 +211,19 @@ class CartController extends Controller
     public function cartDelete(Request $request){
         $cart = Cart::find($request->id);
         if ($cart) {
+            $user_id = $cart->user_id;
             $cart->delete();
+            
+            // Check if this was the last item in the cart
+            $remainingItems = Cart::where('user_id', $user_id)
+                                ->where('order_id', null)
+                                ->count();
+                                
+            // If no items left, clear the coupon
+            if ($remainingItems == 0 && session()->has('coupon')) {
+                session()->forget('coupon');
+            }
+            
             request()->session()->flash('success','Item keranjang berhasil dihapus');
             return back();  
         }
@@ -226,6 +267,20 @@ class CartController extends Controller
         }else{
             return back()->with('Item keranjang tidak valid!');
         }    
+    }
+
+    public function validateCart(Request $request)
+    {
+        $cart = Cart::where('user_id', auth()->user()->id)
+            ->where('order_id', null)
+            ->first();
+
+        if (empty($cart)) {
+            request()->session()->flash('error', 'Keranjang Anda kosong!');
+            return redirect()->route('cart');
+        }
+
+        return redirect()->route('checkout');
     }
 
     // public function addToCart(Request $request){

@@ -166,7 +166,7 @@
                                             <span>Total</span>
                                             <span class="total-amount">Rp {{number_format(Helper::totalCartPrice(),0,',','.')}}</span>
                                         </div>
-                                        <a href="{{route('checkout')}}" class="btn animate">Checkout</a>
+                                        <a href="{{ route('checkout.validate') }}" class="btn animate">Checkout</a>
                                     </div>
                                 </div>
                             @endauth
