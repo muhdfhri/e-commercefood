@@ -23,6 +23,15 @@ class Product extends Model
     public function getReview(){
         return $this->hasMany('App\Models\ProductReview','product_id','id')->with('user_info')->where('status','active')->orderBy('id','DESC');
     }
+    
+    public function getAverageRatingAttribute(){
+        $reviews = $this->getReview;
+        if($reviews->count() > 0){
+            return round($reviews->avg('rate'), 1);
+        }
+        return 0;
+    }
+
     public static function getProductBySlug($slug){
         return Product::with(['cat_info','rel_prods','getReview'])->where('slug',$slug)->first();
     }

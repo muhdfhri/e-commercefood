@@ -68,4 +68,19 @@ class Order extends Model
         return $this->belongsTo('App\User', 'user_id');
     }
 
+    public function orderConfirmation()
+    {
+        return $this->hasOne(OrderConfirmation::class, 'order_id');
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(ProductReview::class, 'order_id');
+    }
+
+    public function complaints()
+    {
+        return $this->hasMany(OrderComplaint::class, 'order_id');
+    }
+
 }

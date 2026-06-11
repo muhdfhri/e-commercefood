@@ -446,6 +446,7 @@ class FrontendController extends Controller
         return view('frontend.pages.register');
     }
     public function registerSubmit(Request $request){
+        \Log::info('Register Submit Hit', $request->all());
         // return $request->all();
         $this->validate($request,[
             'name'=>'string|required|min:2',
@@ -457,6 +458,7 @@ class FrontendController extends Controller
         $check=$this->create($data);
         Session::put('user',$data['email']);
         if($check){
+            Auth::login($check);
             request()->session()->flash('success','Berhasil mendaftar');
             return redirect()->route('home');
         }

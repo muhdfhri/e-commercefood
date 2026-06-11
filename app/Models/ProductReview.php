@@ -6,10 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductReview extends Model
 {
-    protected $fillable=['user_id','product_id','rate','review','status'];
+    protected $fillable=['user_id','product_id','order_id','rate','review','status'];
 
     public function user_info(){
         return $this->hasOne('App\User','id','user_id');
+    }
+
+    public function order(){
+        return $this->belongsTo(Order::class, 'order_id');
     }
 
     public static function getAllReview(){

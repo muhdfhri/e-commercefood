@@ -88,6 +88,71 @@ class HomeController extends Controller
         // return $order;
         return view('user.order.show')->with('order',$order);
     }
+    
+    public function confirmDelivery(Request $request, $id)
+    {
+        $request->validate([
+            'proof_of_delivery' => 'required|image|mimes:jpeg,png,jpg|max:5120',
+        ]);
+        
+        $order = Order::where('id', $id)->where('user_id', auth()->user()->id)->firstOrFail();
+        
+        if ($order->status == 'delivered') {
+            return redirect()->back()->with('error', 'Pesanan sudah dikonfirmasi.');
+        }
+
+        if ($request->hasFile('proof_of_delivery')) {
+            $file = $request->file('proof_of_delivery');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('storage/proof_of_delivery'), $filename);
+            
+            \App\Models\OrderConfirmation::create([
+                'order_id' => $order->id,
+                'user_id' => auth()->user()->id,
+                'photo_path' => 'storage/proof_of_delivery/' . $filename,
+                'notes' => $request->notes
+            ]);
+            
+            $order->status = 'delivered'; // Finished / Selesai
+            if ($order->payment_status == 'unpaid') {
+                $order->payment_status = 'paid';
+            }
+            $order->save();
+            
+            return redirect()->back()->with('success', 'Berhasil mengkonfirmasi penerimaan barang. Terima kasih!');
+        }
+
+        return redirect()->back()->with('error', 'Gagal mengupload bukti penerimaan.');
+    }
+
+    public function submitComplaint(Request $request, $id)
+    {
+        \Log::info('Submit Complaint Hit', ['order_id' => $id, 'data' => $request->all()]);
+        $request->validate([
+            'complaint_reason' => 'required|string|min:10',
+        ]);
+
+        $order = Order::where('id', $id)->where('user_id', auth()->user()->id)->firstOrFail();
+
+        // Cek jika sudah ada komplain untuk pesanan ini
+        $existingComplaint = \App\Models\OrderComplaint::where('order_id', $order->id)->first();
+        if ($existingComplaint) {
+            return redirect()->back()->with('error', 'Anda sudah mengajukan komplain untuk pesanan ini.');
+        }
+
+        \App\Models\OrderComplaint::create([
+            'order_id' => $order->id,
+            'user_id' => auth()->user()->id,
+            'reason' => $request->complaint_reason,
+            'status' => 'pending'
+        ]);
+
+        $order->status = 'complaint';
+        $order->save();
+
+        return redirect()->back()->with('success', 'Komplain Anda berhasil dikirim. Kami akan segera meninjau masalah Anda.');
+    }
+
     // Product Review
     public function productReviewIndex(){
         $reviews=ProductReview::getAllUserReview();

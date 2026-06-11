@@ -9,7 +9,7 @@
 					<div class="bread-inner">
 						<ul class="bread-list">
 							<li><a href="{{route('home')}}">Beranda<i class="ti-arrow-right"></i></a></li>
-							<li class="active"><a href="javascript:void(0);">Kontak</a></li>
+							<li class="active"><a href="javascript:void(0);">Contact</a></li>
 						</ul>
 					</div>
 				</div>

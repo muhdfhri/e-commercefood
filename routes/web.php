@@ -198,6 +198,8 @@
         Route::get('/order', "HomeController@orderIndex")->name('user.order.index');
         Route::get('/order/show/{id}', "HomeController@orderShow")->name('user.order.show');
         Route::delete('/order/delete/{id}', [HomeController::class, 'userOrderDelete'])->name('user.order.delete');
+        Route::post('/order/confirm/{id}', [HomeController::class, 'confirmDelivery'])->name('user.order.confirm');
+        Route::post('/order/complaint/{id}', [HomeController::class, 'submitComplaint'])->name('user.order.complaint');
         // Product Review
         Route::get('/user-review', [HomeController::class, 'productReviewIndex'])->name('user.productreview.index');
         Route::delete('/user-review/delete/{id}', [HomeController::class, 'productReviewDelete'])->name('user.productreview.delete');

@@ -219,6 +219,7 @@
 																			<div class="form-group">
 																				<label>Tulis Ulasan</label>
 																				<textarea name="review" rows="6" placeholder=""></textarea>
+																				<small class="text-danger mt-1 d-block"><i class="fa fa-info-circle"></i> Komentar wajib diisi jika rating 3 bintang atau kurang!</small>
 																			</div>
 																		</div>
 																		<div class="col-lg-12 col-12">
@@ -614,6 +615,19 @@
 					});
 					return false;
 				}
+			});
+
+			// Tambahkan aksi ketika text "X Review" di-klik
+			$('.total-review').on('click', function(e) {
+				e.preventDefault();
+				
+				// Pindah ke tab reviews
+				$('.nav-tabs a[href="#reviews"]').tab('show');
+				
+				// Scroll secara halus ke tab tersebut
+				$('html, body').animate({
+					scrollTop: $('#myTab').offset().top - 80
+				}, 600);
 			});
 
 			// Pastikan tombol add to cart teksnya benar

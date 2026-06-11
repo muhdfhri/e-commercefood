@@ -41,16 +41,23 @@ class ProductReviewController extends Controller
     public function store(Request $request)
     {
         $this->validate($request,[
-            'rate'=>'required|numeric|min:1'
+            'rate'=>'required|numeric|min:1|max:5',
+            'order_id' => 'nullable|exists:orders,id'
         ]);
+
+        if ($request->rate <= 3 && empty($request->review)) {
+            request()->session()->flash('error', 'Komentar wajib diisi jika rating 3 bintang atau kurang.');
+            return redirect()->back();
+        }
+
         $product_info=Product::getProductBySlug($request->slug);
-        //  return $product_info;
-        // return $request->all();
+        
         $data=$request->all();
         $data['product_id']=$product_info->id;
         $data['user_id']=$request->user()->id;
         $data['status']='active';
-        // dd($data);
+        $data['order_id'] = $request->order_id ?? null;
+        
         $status=ProductReview::create($data);
 
         $user=User::where('role','admin')->get();
